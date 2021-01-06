@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "339371371649",
+    "firebase_url": "https://quorumchat.firebaseio.com",
+    "project_id": "quorumchat",
+    "storage_bucket": "quorumchat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339371371649:android:77ae7b3d6a4e0c7d003180",
+        "android_client_info": {
+          "package_name": "com.quorum"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "339371371649-h0vern3kst4v35dk3sli57bm5ks8a956.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQGGCxLRxw96UUATh2MAO3kOQFJ5dJ5Ik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "339371371649-h0vern3kst4v35dk3sli57bm5ks8a956.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339371371649:android:467094a323287db8003180",
+        "android_client_info": {
+          "package_name": "com.quorum.malak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "339371371649-th59t13gdpbgkbu230n7pikv2sug9plo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.quorum.malak",
+            "certificate_hash": "e65de006d55ff204ce263dd8acf514472c916a03"
+          }
+        },
+        {
+          "client_id": "339371371649-h0vern3kst4v35dk3sli57bm5ks8a956.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQGGCxLRxw96UUATh2MAO3kOQFJ5dJ5Ik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "339371371649-h0vern3kst4v35dk3sli57bm5ks8a956.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
