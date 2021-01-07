@@ -66,11 +66,11 @@ export default function ChatScreen({ route, navigation }) {
       },
       {
         _id: 0,
-        text: 'kyc',
+        text: 'KYC viejo lesbiano',
         createdAt: new Date(),
         user: {
           _id: 0,
-          name: 'io',
+          name: 'JessiMalak',
 
         },
         audio: "https://firebasestorage.googleapis.com/v0/b/transforma-app.appspot.com/o/Amurrao.mp3?alt=media&token=a2ba9b1b-400e-43fa-8340-ccfe03c53289"

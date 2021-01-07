@@ -5,7 +5,7 @@ import LinearGradient from "react-native-linear-gradient";
 // import firebase from '../classes/Firebase'
 import sharedStyles from '../classes/Styles';
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/AntDesign'
 //@ts-ignore
 import { CameraKitCameraScreen } from 'react-native-camera-kit';
 import { useTheme } from '@react-navigation/native'
@@ -33,17 +33,17 @@ export default function SearchScreen() {
   const [searching, isSearch] = useState(false);
   const [type, setType] = useState("Usuario");
   const [scannerOpen, Scan] = useState(false);
-  const [icon, setIcon] = useState('account-plus')
+  const [icon, setIcon] = useState('UserAddOutlined')
   const [modalqr, SetVisible] = useState(false)
-  const [userqr, setUser] = useState([])
+  const [userqr, setUser] = useState([{}])
   const [resultados, SetResult] = useState([]);
 
   function changeFilter() {
     if (type == "Usuario") {
-      setIcon('account-multiple-plus');
+      setIcon('UsergroupAddOutlined');
       setType('Sala')
     } else {
-      setIcon('account-plus');
+      setIcon('UserAddOutlined');
       setType('Usuario')
     }
   }

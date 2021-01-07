@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useReducer, useMemo } from 'react';
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { AuthContext } from './classes/Auth'
 import { menta_light, menta_dark, violeta_light, violeta_dark } from './classes/Themes'
@@ -55,12 +55,12 @@ const MainStackScreen = () => {
 
         if (route.name === 'Buscar') {
           iconName = focused
-            ? 'magnify'
-            : 'magnify';
+            ? 'search'
+            : 'search-outline';
         } else if (route.name === 'Chats') {
-          iconName = focused ? 'chat' : 'chat-outline';
+          iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
         } else if (route.name === 'Perfil') {
-          iconName = focused ? 'account' : 'account-outline';
+          iconName = focused ? 'person' : 'person-outline';
         }
         // You can return any component that you like here!
         return <Icon name={iconName} size={size} color={color} />;
