@@ -3,7 +3,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, Switch, ActivityIndicator } from 'react-native';
 import LinearGradient from "react-native-linear-gradient";
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import user from '../classes/User'
 import sharedStyles from '../classes/Styles'
@@ -14,7 +14,7 @@ import QRCode from 'react-native-qrcode-svg'
 import Crypto from '../classes/Crypto'
 import code from '../classes/Data'
 
-
+//@ts-ignore
 export default function SettingsScreen({navigation}) {
     //@ts-ignore
     const { signOut } = React.useContext(AuthContext);
@@ -82,7 +82,7 @@ export default function SettingsScreen({navigation}) {
                             <Text style={{ color: colors.border }}>{user.mail}</Text>
                             <Text style={{ color: colors.border }}>{user.estado}</Text>
                             <View style={{ flexDirection: "row" }}>
-                                <Button isCancel={true} icon={true} name="qrcode" size={32} onPress={() => { createQR() }} />
+                                <Button isCancel={true} icon={true} name="qr-code-outline" size={32} onPress={() => { createQR() }} />
                             </View>
                         </View>
                     </View>
@@ -119,16 +119,25 @@ export default function SettingsScreen({navigation}) {
                         <TouchableOpacity onPress={() => { SetTheme('violeta_dark') }}>
                             <View style={{ backgroundColor: "#51258f", borderColor: "#75204f", borderWidth: 3, height: 30, width: 30, borderRadius: 15 }}></View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { SetTheme("azul_light") }}>
+                        <TouchableOpacity onPress={() => { SetTheme("azul_dark") }}>
                             <View style={{ backgroundColor: "#164c7e", borderColor: "#137485", borderWidth: 3, height: 30, width: 30, borderRadius: 15 }}></View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { SetTheme("rojo_light") }}>
+                        <TouchableOpacity onPress={() => { SetTheme("rojo_dark") }}>
                             <View style={{ backgroundColor: "#a8071a", borderColor: "#791a1f", borderWidth: 3, height: 30, width: 30, borderRadius: 15 }}></View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { SetTheme("light") }}>
+                        <TouchableOpacity onPress={() => { SetTheme("dark") }}>
                             <View style={{ backgroundColor: "#161616", borderColor: "#4d4b4b", borderWidth: 3, height: 30, width: 30, borderRadius: 15 }}></View>
                         </TouchableOpacity>
                     </View>
+                </View>
+                <View style={[sharedStyles.card, {backgroundColor: cardColor}]}>
+                    <TouchableOpacity style={styles.listItem} >
+                        <Text>Acerca de</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.listItem} >
+                        <Icon name="exit" size={32} color={colors.border}/>
+                        <Text>Cerrar sesión</Text>
+                    </TouchableOpacity>
                 </View>
                 <ModalView title="Tu QR" visible={visibleQR}>
                     {qrvalue != "none"
@@ -164,5 +173,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderWidth: 1,
         paddingVertical: 5
+    },
+    listItem:{
+        flex: 1,
+        flexDirection: 'row'
     }
 });

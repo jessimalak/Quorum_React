@@ -33,17 +33,17 @@ export default function SearchScreen() {
   const [searching, isSearch] = useState(false);
   const [type, setType] = useState("Usuario");
   const [scannerOpen, Scan] = useState(false);
-  const [icon, setIcon] = useState('UserAddOutlined')
+  const [icon, setIcon] = useState('adduser')
   const [modalqr, SetVisible] = useState(false)
   const [userqr, setUser] = useState([{}])
   const [resultados, SetResult] = useState([]);
 
   function changeFilter() {
     if (type == "Usuario") {
-      setIcon('UsergroupAddOutlined');
+      setIcon('addusergroup');
       setType('Sala')
     } else {
-      setIcon('UserAddOutlined');
+      setIcon('adduser');
       setType('Usuario')
     }
   }
@@ -134,10 +134,10 @@ export default function SearchScreen() {
             </TouchableOpacity>
             <TextInput onChangeText={text => Setvalue(text)} placeholder={'Buscar ' + type} placeholderTextColor={colors.border + "aa"} style={{ flex: 1, color: colors.text }}></TextInput>
             <TouchableOpacity style={{ paddingHorizontal: 5 }} onPress={() => search()}>
-              <Icon name="magnify" size={24} color={colors.border} />
+              <Icon name="search1" size={24} color={colors.border} />
             </TouchableOpacity>
             <TouchableOpacity style={{ paddingHorizontal: 5, marginRight: 5 }} onPress={() => onOpneScanner()}>
-              <Icon name="qrcode-scan" size={24} color={colors.border} />
+              <Icon name="scan1" size={24} color={colors.border} />
             </TouchableOpacity>
           </View>
           <FlatList renderItem={({ item }) => Item(item)} data={resultados} numColumns={2} />

@@ -92,7 +92,6 @@ const AuthStackScreen = () => {
 
 export default function App() {
   const scheme = useColorScheme();
-  const { colors } = useTheme();
   const [State, setState] = useState(false);
   const [usuario, setUser] = useState();
   const [theme, setTheme] = useState(menta_light)

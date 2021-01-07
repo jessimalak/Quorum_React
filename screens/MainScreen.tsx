@@ -4,13 +4,15 @@ import { StyleSheet, Text, View, FlatList, Image, StatusBar, TouchableOpacity, T
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from '@react-native-async-storage/async-storage'
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 import ModalView, { Button } from '../components/Modal'
 // import Button from '../components/ModalButton'
 import { useTheme } from '@react-navigation/native'
 import user from '../classes/User'
 import sharedStyles from '../classes/Styles';
 import * as Animatable from 'react-native-animatable'
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import Guy from '../components/GuyFawkes'
 
 let tempo = [
   {
@@ -146,9 +148,12 @@ export default function Main({ navigation }) {
     const parent = navigation.dangerouslyGetParent()
     parent.setOptions({
       headerRight: () => (
-        <View style={{ flexDirection: "row" }}>
-          <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { ShowCreateModal(true) }} name="account-group" size={32} color="#fff" />
-          <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => ShowPrivateModal(true)} name="guy-fawkes-mask" size={32} color="#fff" />
+        <View style={{ flexDirection: "row", alignItems: 'center' }}>
+          <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { ShowCreateModal(true) }} name="people-outline" size={32} color="#fff" />
+          <TouchableHighlight onPress={()=>{ShowPrivateModal(true)}} underlayColor={colors.notification} style={{height: 32, width: 32, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: colors.card, marginRight: 10}}>
+            <Guy color={colors.text} size={32} />
+            </TouchableHighlight> 
+          {/* <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => ShowPrivateModal(true)} name="transgender-outline" size={32} color="#fff" /> */}
         </View>)
     })
   })
@@ -182,7 +187,7 @@ export default function Main({ navigation }) {
       <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name }) }}>
         <Animatable.View animation="bounceInLeft" delay={500} duration={1500} style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
           <Image source={chat.img === "none" ? require('../assets/useravatar.png') : { uri: chat.img }} loadingIndicatorSource={require('../assets/useravatar.png')} style={{ width: 50, height: 50, resizeMode: "cover", borderRadius: 50 }} />
-          {!chat.read ? <Icon name="circle" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> : null}
+          {!chat.read ? <Icon name="ellipse" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> : null}
           <View style={{ marginLeft: 5, width: '100%', flex: 1 }}>
             <Text style={{ fontSize: 16, fontFamily: 'Roboto-Regular', paddingBottom: 5, color: colors.border }}>{chat.name}</Text>
             <View style={{ flex: 1, flexDirection: 'row', overflow: 'hidden', alignItems: 'center' }}>
@@ -223,7 +228,7 @@ export default function Main({ navigation }) {
           renderItem={({ item }) => showChat(item)} />
 
         <ModalView visible={PrivateModalState} title="Ingresar a sala privada">
-          <Icon name="guy-fawkes-mask" size={64} color={colors.border} />
+          <Guy color={colors.border} size={72} />
           <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border }]} placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'} placeholder="Código de acceso" />
           <View style={styles.buttonContainer}>
             <Button

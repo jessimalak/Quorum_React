@@ -22,15 +22,15 @@ const style = StyleSheet.create({
     },
     title:{
         fontSize: 24,
-        fontWeight: 'bold',
         textAlign: 'center',
         borderBottomWidth: 1,
         borderStyle: 'solid',
-        paddingBottom: 5,
+        paddingVertical: 5,
         width: '100%',
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        color: "#fff"
+        color: "#fff",
+        fontFamily: 'Raleway-Regular'
     },
     propsView:{
         width: '100%',
@@ -72,8 +72,7 @@ ModalView.propTypes = {
 export default ModalView;
 
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import Icon from 'react-native-vector-icons/Ionicons'
 
 //@ts-ignore
 const cancelButton = (props)=>{
@@ -107,7 +106,7 @@ const acceptButton = (props)=>{
         size = props.size
     }
     if(props.name == null){
-        icon = "check"
+        icon = "checkmark"
     }else{
         icon = props.name
     }

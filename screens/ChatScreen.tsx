@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useState, useCallback } from 'react'
 import { StyleSheet, Text, View, StatusBar, TouchableHighlight } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 import { Bubble, GiftedChat, Time, Send, InputToolbar, Composer } from 'react-native-gifted-chat'
 import { useTheme } from '@react-navigation/native'
 //@ts-ignore
@@ -25,7 +25,7 @@ export default function ChatScreen({ route, navigation }) {
       headerRight: () => {
         return (
           <View style={{ flexDirection: "row" }}>
-            <Icon.Button name="phone" size={32} color="#fff" style={{ backgroundColor: colors.card }} />
+            <Icon.Button name="call-outline" size={32} color="#fff" style={{ backgroundColor: colors.card }} />
           </View>)
       },
     })
@@ -98,7 +98,7 @@ export default function ChatScreen({ route, navigation }) {
           color: colors.card
         }}
         label="Oh"
-        children={<Icon name="send" size={35} color={colors.text} style={{ height: 40, width: 45 }} />}
+        children={<Icon name="send" size={32} color={colors.text} style={{ height: 40, width: 45 }} />}
       //   sendButtonProps={()=>{
       //      // <TouchableHighlight onPress={() => onSend(messages)} underlayColor={colors.card} style={{backgroundColor: colors.primary, borderRadius: 24, height: 40, width: 40, marginBottom: 3, marginRight:3, alignItems: 'center', justifyContent: 'center'}}>
       //  return (<Icon name="send" size={24} color={colors.card} style={{height: 32, width: 32}}/>)
