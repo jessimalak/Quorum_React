@@ -1,16 +1,18 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useReducer, useMemo } from 'react';
+import {Alert} from 'react-native'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { AuthContext } from './classes/Auth'
-import { menta_light, menta_dark, violeta_light, violeta_dark } from './classes/Themes'
+import { menta_light, menta_dark, violeta_light, violeta_dark, rojo_light, rojo_dark, dark, light } from './classes/Themes'
 import user from './classes/User'
 
 import { AppearanceProvider, useColorScheme } from 'react-native-appearance';
 import { NavigationContainer, useTheme } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import messaging from '@react-native-firebase/messaging'
 
 import LoginScreen from './screens/LoginScreen'
 import ChatScreen from './screens/ChatScreen'
@@ -19,6 +21,7 @@ import MainScreen from './screens/MainScreen'
 import SettingsScreen from './screens/SettingsScreen'
 import SearchScreen from './screens/SearchScreen'
 import LoadingScreen from './screens/LoadingScreen'
+import AboutScreen from './screens/AboutScreen'
 
 import RNBootSplash from "react-native-bootsplash";
 
@@ -36,10 +39,33 @@ const ChatStackScreen = () => {
             fontFamily: 'Raleway-Regular',
             fontSize: 23,
             color: "#fff"
+          },
+          headerShown: false
+        }}
+      />
+      <ChatStack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          headerBackImage: (props) => {
+            return (<Icon name="chevron-back-outline" size={32} color={props.tintColor} />)
           }
         }}
       />
-      <ChatStack.Screen name="Chat" component={ChatScreen} />
+      <ChatStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: 'Acerca de...',
+          headerTitleStyle: {
+            fontFamily: 'Raleway-Regular'
+          },
+          headerTitleAlign: 'center',
+          headerBackImage: (props) => {
+            return (<Icon name="chevron-back-outline" size={32} color={props.tintColor} />)
+          }
+        }}
+      />
     </ChatStack.Navigator>
 
   )
@@ -68,7 +94,7 @@ const MainStackScreen = () => {
     })}
       tabBarOptions={{
         activeTintColor: colors.primary,
-        inactiveTintColor: "#fff",
+        inactiveTintColor: colors.text,
         showLabel: false
       }}>
       <MainStack.Screen name="Chats" component={MainScreen} />
@@ -84,8 +110,20 @@ const AuthStack = createStackNavigator();
 const AuthStackScreen = () => {
   return (
     <AuthStack.Navigator>
-      <AuthStack.Screen name="Login" component={LoginScreen} options={{ title: "Bienvenidx a Quorum" }} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} options={{ title: "Regístrate" }} />
+      <AuthStack.Screen name="Login" component={LoginScreen} options={{ title: "Bienvenidx a Quorum", headerTitleStyle:{
+        fontFamily: 'Raleway-Regular'
+      }, headerTitleAlign: 'center' }} />
+      <AuthStack.Screen name="Register" component={RegisterScreen}
+        options={{
+          title: "Regístrate",
+          headerTitleAlign: 'center',
+          headerTitleStyle:{
+            fontFamily: 'Raleway-Regular'
+          },
+          headerBackImage: (props) => {
+            return (<Icon name="chevron-back-outline" size={32} color={props.tintColor} />)
+          }
+        }} />
     </AuthStack.Navigator>
   )
 }
@@ -149,9 +187,25 @@ export default function App() {
               setTheme(menta_light)
               user.theme = "menta_light"
               break;
-              case "menta_dark":
+            case "menta_dark":
               setTheme(menta_dark)
               user.theme = "menta_dark"
+              break;
+            case "rojo_light":
+              setTheme(rojo_light)
+              user.theme = "rojo_light"
+              break;
+            case "rojo_dark":
+              setTheme(rojo_dark)
+              user.theme = "rojo_dark"
+              break;
+            case "dark":
+              setTheme(dark);
+              user.theme = 'dark'
+              break;
+            case "light":
+              setTheme(light);
+              user.theme = 'light'
               break;
           }
         } else {
@@ -176,6 +230,11 @@ export default function App() {
     };
 
     bootstrapAsync();
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
   });
 
   const authContext = useMemo(
