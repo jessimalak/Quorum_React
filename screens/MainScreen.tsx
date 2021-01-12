@@ -1,18 +1,20 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, StatusBar, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, StatusBar, TouchableOpacity, TextInput, Switch, ActivityIndicator, Alert } from 'react-native';
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from '@react-native-async-storage/async-storage'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 import ModalView, { Button } from '../components/Modal'
-// import Button from '../components/ModalButton'
+//@ts-ignore
+import TagsInput from 'react-native-tags-input'
 import { useTheme } from '@react-navigation/native'
 import user from '../classes/User'
 import sharedStyles from '../classes/Styles';
 import * as Animatable from 'react-native-animatable'
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import Guy from '../components/GuyFawkes'
+import firestore from '@react-native-firebase/firestore';
 
 let tempo = [
   {
@@ -23,7 +25,7 @@ let tempo = [
     subname: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Saepe odio temporibus dolorem at omnis magni nesciunt et unde. Dolore vitae quisquam minima inventore."
   },
   {
-    name: "gatita",
+    name: "gatita_official",
     time: "6:00 pm",
     read: true,
     img: "https://randomwordgenerator.com/img/picture-generator/52e1d5424b56aa14f1dc8460962e33791c3ad6e04e50744074267bd69149c7_640.jpg",
@@ -51,7 +53,7 @@ let tempo = [
     subname: "Jugemos"
   },
   {
-    name: "gatita1",
+    name: "maquinadeguerra23",
     time: "12/11/20 7:00 pm",
     img: "none",
     read: false,
@@ -144,19 +146,9 @@ let tempo = [
 export default function Main({ navigation }) {
   const { colors } = useTheme();
   const card = colors.background + "dd"
-  useLayoutEffect(() => {
-    const parent = navigation.dangerouslyGetParent()
-    parent.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: 'center' }}>
-          <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { ShowCreateModal(true) }} name="people-outline" size={32} color="#fff" />
-          <TouchableHighlight onPress={()=>{ShowPrivateModal(true)}} underlayColor={colors.notification} style={{height: 32, width: 32, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: colors.card, marginRight: 10}}>
-            <Guy color={colors.text} size={32} />
-            </TouchableHighlight> 
-          {/* <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => ShowPrivateModal(true)} name="transgender-outline" size={32} color="#fff" /> */}
-        </View>)
-    })
-  })
+
+  const [isEnabled, SetEnabled] = useState(false);
+  const [loading, isLoading] = useState(false);
 
   async function getData() {
     try {
@@ -180,11 +172,12 @@ export default function Main({ navigation }) {
 
   const [PrivateModalState, ShowPrivateModal] = useState(false);
   const [CreateModalState, ShowCreateModal] = useState(false);
-
+  const [roomName, SetRoomName] = useState("");
+  const [etiquetas, SetEtiquetas] = useState("");
   //@ts-ignore
   const showChat = (chat) => {
     return (
-      <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name }) }}>
+      <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name, img: chat.img }) }}>
         <Animatable.View animation="bounceInLeft" delay={500} duration={1500} style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
           <Image source={chat.img === "none" ? require('../assets/useravatar.png') : { uri: chat.img }} loadingIndicatorSource={require('../assets/useravatar.png')} style={{ width: 50, height: 50, resizeMode: "cover", borderRadius: 50 }} />
           {!chat.read ? <Icon name="ellipse" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> : null}
@@ -215,10 +208,53 @@ export default function Main({ navigation }) {
       </TouchableOpacity>
     )
   }
+
+  function CreateRoom() {
+    if (roomName != "") {
+      isLoading(true)
+      firestore().collection('salas').add({
+        nombre: roomName,
+        etiquetas: etiquetas,
+        priviate: isEnabled
+      }).then(() => {
+        SetRoomName("")
+        SetEtiquetas("")
+        isLoading(false);
+        ShowCreateModal(false)
+      }).catch(() => {
+        isLoading(false)
+      })
+    }
+  }
+
+  const Tags = () => {
+    //@ts-ignore
+    let component = [];
+    if (etiquetas && etiquetas.includes(', ')) {
+      etiquetas.split(', ').forEach(tag => {
+        component.push(<View style={{ backgroundColor: colors.card, marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 3, borderRadius: 5 }}><Text style={{ color: colors.text, fontSize: 16 }}>{tag}</Text></View>)
+      })
+      //@ts-ignore
+      return (component)
+    } else {
+      return null
+    }
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <LinearGradient colors={[colors.card, colors.notification]} style={sharedStyles.linearGradient}>
-        <StatusBar barStyle='light-content' backgroundColor={colors.card} />
+        <StatusBar barStyle={colors.text == '#000000' ? 'dark-content' : 'light-content'} backgroundColor={colors.card} />
+        <View style={{ height: 56, width: '100%', backgroundColor: colors.card, alignItems: 'center', flexDirection: 'row', paddingRight: 5, paddingLeft: 15 }}>
+          {/* <Text style={{ fontFamily: 'Raleway-Regular', fontSize: 23, flex: 1, color: '#fff' }}>QUORUM</Text> */}
+          <Image source={colors.text == '#000000' ? require('../assets/nameb05.png') : require('../assets/namew05.png')} style={{ height: 45, resizeMode: 'contain', flex: 1 }} />
+          <View style={{ flexDirection: "row", alignItems: 'center', flex: 2, justifyContent: 'flex-end' }}>
+            <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { ShowCreateModal(true) }} name="people-outline" size={32} color={colors.text} />
+            <TouchableHighlight onPress={() => { ShowPrivateModal(true) }} underlayColor={colors.notification} style={{ height: 32, width: 32, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: colors.card, marginRight: 10 }}>
+              <Guy color={colors.text} size={32} />
+            </TouchableHighlight>
+          </View>
+        </View>
         <FlatList
           style={{ paddingBottom: 10 }}
           data={tempo}
@@ -228,7 +264,7 @@ export default function Main({ navigation }) {
           renderItem={({ item }) => showChat(item)} />
 
         <ModalView visible={PrivateModalState} title="Ingresar a sala privada">
-          <Guy color={colors.border} size={72} />
+          <Guy color={colors.border} size={128} />
           <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border }]} placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'} placeholder="Código de acceso" />
           <View style={styles.buttonContainer}>
             <Button
@@ -243,7 +279,43 @@ export default function Main({ navigation }) {
               onPress={() => ShowPrivateModal(false)} />
           </View>
         </ModalView>
+        <ModalView title="Crear sala" visible={CreateModalState}>
+          {/* <Icon name='people-outline' color={colors.border} size={92}/> */}
+          <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
+            placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
+            placeholder="Nombre"
+            onChangeText={(value) => { SetRoomName(value) }}
+          />
 
+          <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
+            placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
+            placeholder="Etiquetas separadas por comas (,)"
+            onChangeText={(value) => { SetEtiquetas(value) }}
+          />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Tags />
+          </View>
+          <View style={[styles.buttonContainer, { marginHorizontal: 20, width: '90%', marginVertical: 10 }]}>
+            <Switch value={isEnabled} thumbColor={isEnabled ? colors.card : colors.primary} onValueChange={(value) => SetEnabled(value)} />
+            <Text style={{ color: colors.border }}>{isEnabled ? 'Sala privada' : 'Sala Pública'}</Text>
+          </View>
+
+          {loading ? (<ActivityIndicator size='large' color={colors.primary} />) : (<View style={styles.buttonContainer}>
+            <Button
+              isCancel={false}
+              icon={true}
+              //@ts-ignore
+              onPress={() => CreateRoom()} />
+            <Button
+              isCancel={true}
+              icon={true}
+              //@ts-ignore
+              onPress={() => ShowCreateModal(false)} />
+          </View>)}
+        </ModalView>
+        <TouchableOpacity onPress={() => { Alert.alert('Añadir chat', 'aqui van los contactos') }} style={[styles.fab, { backgroundColor: colors.card }]}>
+          <Icon name="pencil" size={32} color={colors.text} />
+        </TouchableOpacity>
       </LinearGradient>
     </View>
   );
@@ -261,5 +333,16 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    height: 64,
+    width: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3
   }
 });

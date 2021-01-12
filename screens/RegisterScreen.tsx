@@ -1,16 +1,17 @@
 import React,{useState} from 'react';
-import { StyleSheet, Text, View, StatusBar, Image } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, Image, KeyboardAvoidingView } from 'react-native';
 import LinearGradient from "react-native-linear-gradient";
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import { useTheme } from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import user from '../classes/User'
 import codes from '../classes/Data'
 import Crypto from '../classes/Crypto'
 import {AuthContext} from '../classes/Auth'
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 
 const crypto = new Crypto;
 
@@ -26,7 +27,8 @@ export default function RegisterScreen({navigation}) {
     const [password2, setPass2] = useState("");
     const [error, setError] = useState("");
     const [visiblePass, isVisible] = useState(true);
-
+    const [icon, setIcon] = useState('eye-outline')
+    const {colors} = useTheme()
     // state = {
     //     username:"",
     //     name:"",
@@ -48,7 +50,7 @@ export default function RegisterScreen({navigation}) {
         const username_ = crypto.Encrypt(username, codes[4], "A", false, false)
         const name_ = crypto.Encrypt(name, codes[4], "A", false, false)
         const email_ = crypto.Encrypt(mail, codes[4], "A", false, false)
-        auth().createUserWithEmailAndPassword(mail, password1).then(async(userdata)=>{
+        auth().createUserWithEmailAndPassword(mail.trim(), password1.trim()).then(async(userdata)=>{
             //@ts-ignore
             user.id = userdata.user?.uid
             userdata.user?.updateProfile({
@@ -81,8 +83,8 @@ export default function RegisterScreen({navigation}) {
         return (
             <View style={styles.container}>
                 <StatusBar />
-                <LinearGradient colors={['#b37feb', '#13c2c2']} start={{x:0.1, y:0.1}} style={styles.linearGradient}>
-                    <View style={styles.box_container}>
+                <LinearGradient colors={[colors.card, colors.notification]} start={{x:0.1, y:0.1}} style={styles.linearGradient}>
+                    <KeyboardAvoidingView behavior='position' style={styles.box_container}>
                         <Image style={styles.img} source={require('../assets/namew05.png')}/>
                         <View style={styles.errorMessage}>
                             <Text style={styles.error}>{error}</Text>
@@ -118,14 +120,18 @@ export default function RegisterScreen({navigation}) {
                         </View>
                         <View style={styles.inputContainer}>
                             <Text style={styles.inputTitle}>Contraseña</Text>
-                            <TextInput
-                                style={styles.input}
+                            <View style={styles.input}>
+                                <TextInput
+                                style={{flex: 1, color: "#fff"}}
                                 autoCapitalize="none"
                                 autoCompleteType="password"
-                                secureTextEntry
+                                secureTextEntry={visiblePass}
                                 onChangeText={password1 => setPass1(password1)}
                                 value={password1}
-                            ></TextInput>
+                            />
+                            <Icon onPress={()=>{isVisible(!visiblePass); icon == 'eye-outline' ? setIcon('eye-off-outline') : setIcon('eye-outline')}} name={icon} size={24} color="#fff"/>
+                            </View>
+                            
                         </View>
                         <View style={styles.inputContainer}>
                             <Text style={styles.inputTitle}>Repite tu contraseña</Text>
@@ -137,11 +143,14 @@ export default function RegisterScreen({navigation}) {
                                 value={password2}
                             ></TextInput>
                         </View>
-                        <TouchableOpacity style={styles.button} onPress={()=>register()}>
+                        <TouchableOpacity style={[styles.button, {backgroundColor: colors.card}]} onPress={()=>register()}>
                             <Text style={{ color: "#fff", fontSize: 18, marginRight:10 }}>Listo</Text>
-                            <Icon name="check" size={20} color="#fff"/>
+                            <View style={{position: 'absolute', right: 15}}>
+                                <Icon name="log-in-outline" size={32} color="#fff"/>
+                            </View>
+                            
                         </TouchableOpacity>
-                    </View>
+                    </KeyboardAvoidingView>
 
                 </LinearGradient>
 
@@ -174,18 +183,17 @@ const styles = StyleSheet.create({
     input: {
         borderBottomColor: "#eee",
         borderBottomWidth: StyleSheet.hairlineWidth,
-        height: 20,
+        height: 40,
         fontSize: 15,
         color: "#eee",
-        marginTop: 15,
-        padding:1
+        flexDirection: 'row',
+        alignItems:'center'
     },
     inputContainer: {
         marginBottom: 35
     },
     button: {
-        
-        backgroundColor: '#b37feb',
+        position: 'relative',
         borderRadius: 10,
         height: 45,
         alignItems: 'center',

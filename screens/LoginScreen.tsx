@@ -5,28 +5,27 @@ import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import { useTheme } from '@react-navigation/native'
 import user from '../classes/User';
 import Crypto from '../classes/Crypto'
 import codes from '../classes/Data'
 import {AuthContext} from '../classes/Auth'
 //@ts-ignore
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import Icon from 'react-native-vector-icons/Ionicons'
 
 const usersCollection = firestore().collection('usuarios');
 const crypto = new Crypto;
 
+//@ts-ignore
 export default function LoginScreen({navigation}) {
+  //@ts-ignore
   const {signIn} = React.useContext(AuthContext);
   const [mail, setMail] = useState("");
   const [password, setPass] = useState("");
   const [error, setError] = useState("");
   const [visiblePass, isVisible] = useState(true);
-  // state = {
-  //   email: "",
-  //   password: "",
-  //   error: null,
-  //   hidePass: true
-  // }
+  const [icon, setIcon] = useState('eye-outline')
+  const {colors} = useTheme()
 
  async function login() {
     if (mail == "") {
@@ -43,16 +42,20 @@ export default function LoginScreen({navigation}) {
         await saveLocal("mail", userData.user?.email)
         await usersCollection.doc(user.id).get().then(async(info)=>{
           const data = info.data()
+          //@ts-ignore
           let name = crypto.Decrypt(data.nombre, codes[13], "B", true, false);
+          //@ts-ignore
           let username = crypto.Decrypt(data.username, codes[13], "B", true, false);
-          let estado = crypto.Decrypt(data.estado, codes[13], "B", true, false);
-          user.estado = estado;
+          //@ts-ignore
+          // let estado = crypto.Decrypt(data.estado, codes[13], "B", true, false);
+          user.estado = data.estado;
           user.name = name;
           user.username = username;
           await saveLocal("id", user.id);
           await saveLocal("name", crypto.Decrypt(name, codes[4], "A", false, false));
           await saveLocal("username", crypto.Decrypt(username, codes[4], "A", false, false));
-          await saveLocal("estado", crypto.Decrypt(estado, codes[4], "A", false, false));
+          //@ts-ignore
+          await saveLocal("estado", data.estado);
           signIn({id: user.id, name: name});
         })
       }).catch(
@@ -71,8 +74,8 @@ export default function LoginScreen({navigation}) {
 
     return (
       <View style={styles.container}>
-        <StatusBar />
-        <LinearGradient colors={['#b37feb', '#13c2c2']} style={styles.linearGradient}>
+        <StatusBar barStyle='light-content' backgroundColor={colors.card} />
+        <LinearGradient colors={[colors.card, colors.notification]} style={styles.linearGradient}>
           <Image style={styles.img} source={require("../assets/logow05.png")}/>
           <View style={styles.box_container}>
             <View style={styles.errorMessage}>
@@ -100,13 +103,16 @@ export default function LoginScreen({navigation}) {
                 onChangeText={password => setPass(password)}
                 value={password}
               ></TextInput>
-              <Icon onPress={()=>isVisible(!visiblePass)} name="eye" size={16} color="#fff"/>
+              <Icon onPress={()=>{isVisible(!visiblePass); icon == 'eye-outline' ? setIcon('eye-off-outline') : setIcon('eye-outline')}} name={icon} size={24} color="#fff"/>
               </View>
               
             </View>
-            <TouchableOpacity style={styles.button} onPress={()=>login()}>
+            <TouchableOpacity style={[styles.button, {backgroundColor: colors.card}]} onPress={()=>login()}>
               <Text style={{ color: "#fff", fontSize: 18, marginRight: 10 }}>Listo</Text>
-              <Icon name="check" size={20} color="#fff"/>
+              <View style={{position: 'absolute', right: 15}}>
+                <Icon name="log-in-outline" size={32} color="#fff"/>
+                </View>
+              
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button_mini}
@@ -166,12 +172,12 @@ const styles = StyleSheet.create({
   },
   button: {
     // marginHorizontal: 30,
-    backgroundColor: '#b37feb',
     borderRadius: 10,
     height: 45,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    position: 'relative'
   },
   button_mini: {
     marginTop: 15,

@@ -1,8 +1,10 @@
 import React from 'react';
-import {Modal, Text, View, StyleSheet, TouchableHighlight} from 'react-native'
+import {Modal, Text, View, StyleSheet, TouchableHighlight, Dimensions} from 'react-native'
 import sharedStyles from '../classes/Styles'
 import PropTypes from 'prop-types'
 import {useTheme} from '@react-navigation/native'
+
+const {height, width} = Dimensions.get('screen')
 
 const style = StyleSheet.create({
     main:{
@@ -11,14 +13,17 @@ const style = StyleSheet.create({
         alignItems: 'center'
     },
     window:{
-        width: '80%',
+        width: width - 10,
+        height: height / 2.4,
         borderRadius: 15,
         flexDirection: 'column',
         alignItems: 'center',
-        position: 'relative',
+        position: 'absolute',
         elevation: 10,
         zIndex: 1,
         paddingBottom: 10,
+        bottom: 0,
+        marginHorizontal: 5
     },
     title:{
         fontSize: 24,
@@ -29,7 +34,6 @@ const style = StyleSheet.create({
         width: '100%',
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        color: "#fff",
         fontFamily: 'Raleway-Regular'
     },
     propsView:{
@@ -48,9 +52,9 @@ return(
         transparent={true}
         visible={props.visible}
     >
-        <View style={style.main} >
-            <View style={[style.window, {backgroundColor: colors.text}]}>
-                <Text style={[style.title,{ backgroundColor: colors.card, borderBottomColor: colors.border}]}>
+        {/* <View style={style.main} > */}
+            <View style={[style.window, {backgroundColor: colors.background}]}>
+                <Text style={[style.title,{ backgroundColor: colors.card, borderBottomColor: colors.border, color: colors.text}]}>
                     {props.title}
                 </Text>
                 <View style={style.propsView}>
@@ -59,7 +63,7 @@ return(
                 
             </View>
             
-        </View>
+        {/* </View> */}
     </Modal>
     )
 }
@@ -79,7 +83,7 @@ const cancelButton = (props)=>{
     let size:Number;
     let icon:String;
     if(props.size == null){
-        size = size = props.icon ? 20 : 16
+        size = props.icon ? 20 : 16
     }else{
         size = props.size
     }
@@ -90,8 +94,8 @@ const cancelButton = (props)=>{
     }
     const {colors} = useTheme();
     return(
-    <TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style, {backgroundColor: colors.notification, marginLeft: 10}]} underlayColor={colors.primary}>
-            {props.icon ? <Icon name={icon} size={size} style={{textAlign:'center'}} color="#FfF"/>  : <Text style={{textAlign:'center', color: props.size}}>{props.texto}</Text>}
+    <TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style, {backgroundColor: colors.notification}]} underlayColor={colors.primary}>
+            {props.icon ? <Icon name={icon} size={size} style={{textAlign:'center'}} color={colors.text}/>  : <Text style={{textAlign:'center', color: props.size}}>{props.texto}</Text>}
     </TouchableHighlight>)
 }
 
@@ -111,7 +115,7 @@ const acceptButton = (props)=>{
         icon = props.name
     }
     return(<TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style]} underlayColor="#b37feb">
-            {props.icon ? <Icon name={icon} size={size} color={colors.card} style={{textAlign:'center'}}/> : <Text style={{textAlign:'center', color: colors.card, fontSize: props.size}}>{props.texto}</Text>}
+            {props.icon ? <Icon name={icon} size={size} color={colors.primary} style={{textAlign:'center'}}/> : <Text style={{textAlign:'center', color: colors.card, fontSize: props.size}}>{props.texto}</Text>}
         </TouchableHighlight>)
 }
 

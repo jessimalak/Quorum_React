@@ -22,12 +22,7 @@ export default function SettingsScreen({navigation}) {
         await AsyncStorage.clear();
         signOut();
     }
-    // useLayoutEffect(()=>{
-    //     const parent = navigation.dangerouslyGetParent();
-    //     parent.setOptions({
-    //         headerShown: false
-    //     })
-    // })
+
     const { colors } = useTheme();
     const cardColor = colors.background + "dd"
     const [isEnabled, SetEnabled] = useState(user.systemTheme);
@@ -55,10 +50,6 @@ export default function SettingsScreen({navigation}) {
 
     const crypt = new Crypto;
 
-    // useEffect(()=>{
-
-    // })
-
     function createQR() {
         if (qrvalue == "none") {
             let name = crypt.Encrypt(user.username, code[5], "A", false, false)
@@ -68,9 +59,10 @@ export default function SettingsScreen({navigation}) {
         }
         SetVisible(true)
     }
+
     return (
         <View style={styles.container}>
-            <StatusBar />
+            <StatusBar barStyle={colors.text == '#000000' ? 'dark-content' : 'light-content'} />
             <LinearGradient colors={[colors.card, colors.notification]}
                 start={{ x: 0.1, y: 0.1 }}
                 style={sharedStyles.linearGradient}>
@@ -130,13 +122,14 @@ export default function SettingsScreen({navigation}) {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <View style={[sharedStyles.card, {backgroundColor: cardColor}]}>
-                    <TouchableOpacity style={styles.listItem} >
-                        <Text>Acerca de</Text>
+                <View style={[sharedStyles.card, {backgroundColor: cardColor, flexDirection: 'column'}]}>
+                    <TouchableOpacity onPress={()=>{navigation.navigate("About")}} style={[styles.listItem, {borderBottomColor: colors.border+"33", borderBottomWidth: 1}]} >
+                        <Icon name="information" size={32} color={colors.border}/>
+                        <Text style={{ fontSize: 16, fontFamily: "Roboto-Light", marginLeft: 5, color: colors.border}}>Acerca de</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.listItem} >
-                        <Icon name="exit" size={32} color={colors.border}/>
-                        <Text>Cerrar sesión</Text>
+                    <TouchableOpacity onPress={()=>{signout()}} style={styles.listItem} >
+                        <Icon name="log-out-outline" size={32} color={colors.border}/>
+                        <Text style={{ fontSize: 16, fontFamily: "Roboto-Light", marginLeft: 5, color: colors.border}}>Cerrar sesión</Text>
                     </TouchableOpacity>
                 </View>
                 <ModalView title="Tu QR" visible={visibleQR}>
@@ -175,7 +168,9 @@ const styles = StyleSheet.create({
         paddingVertical: 5
     },
     listItem:{
-        flex: 1,
-        flexDirection: 'row'
+        paddingVertical: 5,
+        flexDirection: 'row',
+        width: '100%',
+        alignItems: 'center'
     }
 });

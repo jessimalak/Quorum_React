@@ -1,43 +1,59 @@
 import React, { useEffect, useLayoutEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, StatusBar, TouchableHighlight } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 import { Bubble, GiftedChat, Time, Send, InputToolbar, Composer } from 'react-native-gifted-chat'
+//@ts-ignore
+import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu';
 import { useTheme } from '@react-navigation/native'
 //@ts-ignore
 import { CameraKitCamera } from 'react-native-camera-kit'
+//@ts-ignore
+import EmojiBoard from 'react-native-emoji-board'
+import user from '../classes/User';
 
 //@ts-ignore
 export default function ChatScreen({ route, navigation }) {
-  const { name, id } = route.params;
+  const { name, id, img } = route.params;
   const { colors } = useTheme();
   const [mensajes, setMessages] = useState([]);
   const [cameraVisible, OpenCamera] = useState(false);
+  const [emojiVisible, SetVisibleEmoji] = useState(false)
+
+  //@ts-ignore
+  let _menu = null;
+
   useLayoutEffect(() => {
-    const parent = navigation.dangerouslyGetParent()
 
     navigation.setOptions({
       headerTitleStyle: {
         fontFamily: 'Raleway-Regular',
       },
-      headerTitle: name,
+      // headerTitle: name,
       headerRight: () => {
         return (
-          <View style={{ flexDirection: "row" }}>
-            <Icon.Button name="call-outline" size={32} color="#fff" style={{ backgroundColor: colors.card }} />
+          <View style={{ flexDirection: "row", alignItems: 'center' }}>
+            <Icon name="call-outline" size={32} color={colors.text} style={{ backgroundColor: colors.card, paddingHorizontal: 10 }} />
+            <Menu ref={(ref) => (_menu = ref)}
+              button={<Icon onPress={() => _menu.show()} name="ellipsis-vertical" size={26} color={colors.text} style={{ backgroundColor: colors.card, paddingLeft: 5, paddingRight: 10, paddingVertical: 8 }} />}>
+              <MenuItem>{<Icon name="trash-outline" size={18} color="#000" />} Vaciar chat</MenuItem>
+              <MenuItem>{<Icon name="lock-closed-outline" size={18} color="#000" />} Bloquear</MenuItem>
+            </Menu>
           </View>)
       },
+      headerTitle: (props) => {
+        return (
+          <TouchableOpacity onPress={() => alert(name)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image style={{ height: 44, width: 44, resizeMode: 'cover', borderRadius: 44 }} source={img == 'none' ? require('../assets/useravatar.png') : { uri: img }} />
+              <Text ellipsizeMode='tail' textBreakStrategy='simple' style={{ fontSize: 20, color: colors.text, fontFamily: 'Raleway-Regular', marginLeft: 10 }}>{name}</Text>
+            </View>
+          </TouchableOpacity>
+        )
+      }
     })
 
-    // parent.setOptions({
-    //   tabBarVisible: false
-    // });
-    // return () => {
-    //   parent.setOptions({
-    //     tabBarVisible: true
-    //   });
-    // }
   })
 
   useEffect(() => {
@@ -116,7 +132,7 @@ export default function ChatScreen({ route, navigation }) {
           left: {
             color: placeColor
           },
-          right:{
+          right: {
             color: colors.background
           }
         }}
@@ -141,7 +157,7 @@ export default function ChatScreen({ route, navigation }) {
             color: colors.background,
             fontFamily: 'Roboto-Regular'
           },
-          left:{
+          left: {
             color: colors.text,
             fontFamily: 'Roboto-Regular'
           }
@@ -155,35 +171,37 @@ export default function ChatScreen({ route, navigation }) {
     )
   }
   //@ts-ignore
-  const inputComposer = (props)=>{
-    return(
-      <Composer {...props}
-      textInputStyle={{
-        color: colors.text
-      }}
-      placeholderTextColor={placeColor}
-      />
-    )
-  }
-
-  //@ts-ignore
-  const input = (props)=>{
-    return(
-      <InputToolbar {...props}
-      containerStyle={{
-        backgroundColor: colors.card,
-        justifyContent: 'center'
-        
-      }}
-      renderComposer={inputComposer}
-      />
-    )
-  }
-
-  //@ts-ignore
-  const camera = (props) => {
+  const inputComposer = (props) => {
     return (
-      <Icon.Button onPress={()=>{OpenCamera(true)}} style={{backgroundColor: "#fff"}} name="camera" size={35} color={colors.card} />
+      <Composer {...props}
+        textInputStyle={{
+          color: colors.text
+        }}
+        placeholderTextColor={placeColor}
+
+      />
+    )
+  }
+
+  //@ts-ignore
+  const input = (props) => {
+    return (
+      <InputToolbar {...props}
+        containerStyle={{
+          backgroundColor: colors.card,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        renderComposer={inputComposer}
+
+      />
+    )
+  }
+
+  //@ts-ignore
+  const emojis = (props) => {
+    return (
+      <Icon onPress={() => { OpenCamera(true) }} style={{ backgroundColor: colors.card }} name="happy-outline" size={35} color={colors.text} />
     )
   }
 
@@ -206,25 +224,28 @@ export default function ChatScreen({ route, navigation }) {
           }}
           resetFocusTimeout={0} // optional
           resetFocusWhenMotionDetected={true} // optional
-        />) :(
-        <GiftedChat
-          //@ts-ignore
-          style={{ height: '100%', width: '100%' }}
-          placeholder="Escribe un mensaje..."
-          showUserAvatar={false}
-          inverted={true}
-          renderUsernameOnMessage={true}
-          alignTop={true}
-          messages={mensajes}
-          user={{ _id: idM, name: "Jess" }}
-          onSend={messages => onSend(messages)}
-          renderSend={sendButton}
-          renderBubble={StyledBubble}
-          // renderActions={camera}
-          // renderAccessory={camera}
-          renderInputToolbar={input}
-        />)
-}
+        />) : (
+            <GiftedChat
+              //@ts-ignore
+              style={{ height: '100%', width: '100%' }}
+              placeholder="Escribe un mensaje..."
+              showUserAvatar={false}
+              inverted={true}
+              renderUsernameOnMessage={true}
+              alignTop={true}
+              messages={mensajes}
+              user={{ _id: idM, name: user.username }}
+              onSend={messages => onSend(messages)}
+              renderSend={sendButton}
+              renderBubble={StyledBubble}
+              renderActions={emojis}
+              onPressActionButton={() => SetVisibleEmoji(true)}
+              // renderAccessory={camera}
+              renderInputToolbar={input}
+            />
+          )
+        }
+        <EmojiBoard showBoard={emojiVisible} onClick={(emoji:string) => { console.log(emoji) }} />
       </LinearGradient>
 
 
