@@ -6,8 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 import ModalView, { Button } from '../components/Modal'
-//@ts-ignore
-import TagsInput from 'react-native-tags-input'
 import { useTheme } from '@react-navigation/native'
 import user from '../classes/User'
 import sharedStyles from '../classes/Styles';
