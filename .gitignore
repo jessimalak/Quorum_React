@@ -163,4 +163,8 @@ dist
 
 # TernJS port file
 .tern-port
+
+#claves de uso y encriptado
+classes/Data.ts
+android/app/google-services.json
 >>>>>>> 20bbb4077fa39f09d784fab75e62d5499fdfbb34
