@@ -1,13 +1,16 @@
-#QUORUM :tw-1f4ac:
+# QUORUM 💬
 ![Logo quroum](https://github.com/jessimalak/Quorum_React/blob/master/assets/logoc1.png "Logo quroum")
 
 App de chat que busca asegurar la privacidad de la información usando distintos metodos de encriptado combinados.
+
+**React Native 0.63 **
+**Typescript 4.1.5**
 
 ------------
 
 
 
-### Características actuales :tw-1f4cc:
+### Características actuales 📌
 
 - Encriptado completo de la información del usuario.
 - Encriptado único para cada chat por usuario.
@@ -17,7 +20,7 @@ App de chat que busca asegurar la privacidad de la información usando distintos
 - Buscador de usuarios y salas públicas.
 - Chat de texto en tiempo real.
 
-### Características pendientes :tw-1f4dd:
+### Características pendientes 📝
 
 - Envio de archivos.
 - LLamadas de audio y video.
@@ -31,7 +34,7 @@ App de chat que busca asegurar la privacidad de la información usando distintos
 - Cambiar el color de la burbuja de chat.
 - Comandos para mensajes automáticos.
 
-###Paquetes y librerias
+### Paquetes y librerias
 |Nombre   | Versión  |
 | ------------ | ------------ |
 | @react-native-async-storage/async-storage  | 1.13.2  |
