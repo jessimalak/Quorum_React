@@ -7,14 +7,14 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import { useTheme } from '@react-navigation/native'
 import user from '../classes/User';
-import Crypto from '../classes/Crypto'
+import crypto from '../classes/Crypto'
 import codes from '../classes/Data'
 import {AuthContext} from '../classes/Auth'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 
 const usersCollection = firestore().collection('usuarios');
-const crypto = new Crypto;
+
 
 //@ts-ignore
 export default function LoginScreen({navigation}) {
@@ -43,17 +43,17 @@ export default function LoginScreen({navigation}) {
         await usersCollection.doc(user.id).get().then(async(info)=>{
           const data = info.data()
           //@ts-ignore
-          let name = crypto.Decrypt(data.nombre, codes[13], "B", true, false);
+          let name = crypto.Decrypt(data.nombre, codes[13], "B", true, 13);
           //@ts-ignore
-          let username = crypto.Decrypt(data.username, codes[13], "B", true, false);
+          let username = userData.user.displayName || 'none';
           //@ts-ignore
           // let estado = crypto.Decrypt(data.estado, codes[13], "B", true, false);
           user.estado = data.estado;
           user.name = name;
           user.username = username;
           await saveLocal("id", user.id);
-          await saveLocal("name", crypto.Decrypt(name, codes[4], "A", false, false));
-          await saveLocal("username", crypto.Decrypt(username, codes[4], "A", false, false));
+          await saveLocal("name", crypto.Decrypt(name, codes[4], "A", false, 4));
+          await saveLocal("username", username);
           //@ts-ignore
           await saveLocal("estado", data.estado);
           signIn({id: user.id, name: name});
@@ -87,6 +87,7 @@ export default function LoginScreen({navigation}) {
                 style={styles.input}
                 autoCapitalize="none"
                 autoCompleteType="email"
+                keyboardType='email-address'
                 onChangeText={email => setMail(email)}
                 value={mail}
               ></TextInput>

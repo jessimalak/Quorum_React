@@ -10,13 +10,10 @@ import Icon from 'react-native-vector-icons/AntDesign'
 import { CameraKitCameraScreen } from 'react-native-camera-kit';
 import { useTheme } from '@react-navigation/native'
 // import user from '../classes/User'
-import Crypto from '../classes/Crypto'
+import crypto from '../classes/Crypto'
 import ModalView, { Button } from '../components/Modal'
 import codes from '../classes/Data';
 import { FlatList } from 'react-native-gesture-handler';
-import { color } from 'react-native-reanimated';
-
-const crypto = new Crypto;
 
 const datica = [
   {
@@ -123,8 +120,8 @@ export default function SearchScreen() {
 
     if (value.includes('QUORUM µ')) {
       let data = value.split("µ");
-      let username = crypto.Decrypt(data[3], codes[5], "A", false, false);
-      let uid = crypto.Decrypt(data[2], codes[5], "A", true, false);
+      let username = crypto.Decrypt(data[3], codes[5], "A", false, 5);
+      let uid = crypto.Decrypt(data[2], codes[5], "A", true, 5);
       uid = crypto.Reverse(uid)
       //@ts-ignore
       setUser({ name: username, id: uid })

@@ -1,48 +1,39 @@
 import CryptoES from 'crypto-es';
+import items from './Data'
     
-   export default class Crypto {
-       Reverse(value: string): string {
+
+ const Crypto = {
+       Reverse: (value: string): string=> {
         let reverse = value.split("").reverse().join("")
         return reverse
-    }
-
-    Encrypt(value: string, key_: string, method: string, reverseKey: boolean, reverse:boolean): string {
+    },
+    Encrypt: (value: string, key_: string, method: "A" | "T" | "R" | "B", reverseKey: boolean, id?:number): string=> {
         let encrypted: string = value;
-        let key = key_;
-        if(reverseKey){
-            key = this.Reverse(key_);
-        }
+        let key = id ? items[id] : reverseKey ? Crypto.Reverse(key_) : key_;
         if (method == "A") {
             encrypted = CryptoES.AES.encrypt(value, key).toString()
-        } else if (method == "B") {
+        } else if (method == "T") {
             encrypted = CryptoES.TripleDES.encrypt(value, key).toString()
         } else if (method == "R") {
             encrypted = CryptoES.Rabbit.encrypt(value, key).toString()
         }
-        if(reverse){
-            return this.Reverse(encrypted)
-        }else{
-            return encrypted
-        }
-    }
-
-    Decrypt(value: string, key_: string, method: string, reverseKey: boolean, reverse:boolean): string {
-        let decrypted: string = value;
-        let key = key_;
-        if(reverseKey){
-            key = this.Reverse(key_);
-        }
+        encrypted = encrypted.split('=').reverse().join('=').split('+').reverse().join('+')
+            return Crypto.Reverse(encrypted)
+    },
+    Decrypt: (value: string, key_: string, method: "A" | "T" | "R" | "B ", reverseKey: boolean, id?:number): string=> {
+        let value_ = Crypto.Reverse(value)
+        value_ = value_.split('+').reverse().join('+').split('=').reverse().join('=')
+        let decrypted: string = value_;
+        let key = id ? items[id] : reverseKey ? Crypto.Reverse(key_) : key_;
         if (method == "A") {
-            decrypted = CryptoES.AES.decrypt(value, key).toString(CryptoES.enc.Utf8)
-        } else if (method == "B") {
-            decrypted = CryptoES.TripleDES.decrypt(value, key).toString(CryptoES.enc.Utf8)
+            decrypted = CryptoES.AES.decrypt(value_, key).toString(CryptoES.enc.Utf8)
+        } else if (method == "T") {
+            decrypted = CryptoES.TripleDES.decrypt(value_, key).toString(CryptoES.enc.Utf8)
         } else if (method == "R") {
-            decrypted = CryptoES.Rabbit.decrypt(value, key).toString(CryptoES.enc.Utf8)
+            decrypted = CryptoES.Rabbit.decrypt(value_, key).toString(CryptoES.enc.Utf8)
         }
-        if(reverse){
-            return this.Reverse(decrypted)
-        }else{
             return decrypted
-        }
+        
     }
-}
+}  
+ export default Crypto

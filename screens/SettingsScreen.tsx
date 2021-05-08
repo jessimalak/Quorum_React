@@ -11,7 +11,7 @@ import { useTheme } from '@react-navigation/native'
 import { AuthContext } from '../classes/Auth'
 import ModalView, { Button } from '../components/Modal'
 import QRCode from 'react-native-qrcode-svg'
-import Crypto from '../classes/Crypto'
+import crypto from '../classes/Crypto'
 import code from '../classes/Data'
 
 //@ts-ignore
@@ -47,8 +47,6 @@ export default function SettingsScreen({navigation}) {
             if (!user.systemTheme) await AsyncStorage.setItem('tema', tema);
         }
     }
-
-    const crypt = new Crypto;
 
     function createQR() {
         if (qrvalue == "none") {

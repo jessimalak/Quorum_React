@@ -8,12 +8,11 @@ import { useTheme } from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import user from '../classes/User'
 import codes from '../classes/Data'
-import Crypto from '../classes/Crypto'
+import crypto from '../classes/Crypto'
 import {AuthContext} from '../classes/Auth'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 
-const crypto = new Crypto;
 
 const usersColl = firestore().collection('usuarios');
 //@ts-ignore
@@ -47,9 +46,9 @@ export default function RegisterScreen({navigation}) {
         await saveLocal("name", name);
         await saveLocal("username", username);
         await saveLocal("estado", 'Hola, soy nuev@ en Quorum');
-        const username_ = crypto.Encrypt(username, codes[4], "A", false, false)
-        const name_ = crypto.Encrypt(name, codes[4], "A", false, false)
-        const email_ = crypto.Encrypt(mail, codes[4], "A", false, false)
+        const username_ = crypto.Encrypt(username, codes[4], "A", false, 4)
+        const name_ = crypto.Encrypt(name, codes[4], "A", false, 4)
+        const email_ = crypto.Encrypt(mail, codes[4], "A", false, 4)
         auth().createUserWithEmailAndPassword(mail.trim(), password1.trim()).then(async(userdata)=>{
             //@ts-ignore
             user.id = userdata.user?.uid
@@ -58,9 +57,9 @@ export default function RegisterScreen({navigation}) {
             })
             await saveLocal("id", user.id)
             await usersColl.doc(user.id).set({
-                username: crypto.Encrypt(username_, codes[13], "B", true, false),
-                mail: crypto.Encrypt(email_, codes[13], "B", true, false),
-                nombre: crypto.Encrypt(name_, codes[13], "B", true, false),
+                username: crypto.Encrypt(username_, codes[13], "B", true, 13),
+                mail: crypto.Encrypt(email_, codes[13], "B", true, 13),
+                nombre: crypto.Encrypt(name_, codes[13], "B", true, 13),
                 estado: "Hola, soy nuev@ en Quorum",
                 verified: false
             }).then(()=>{
