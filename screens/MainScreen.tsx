@@ -20,14 +20,16 @@ let tempo = [
     time: "7:00 pm",
     read: false,
     img: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.boostability.com%2Fwp-content%2Fuploads%2F2014%2F09%2FPanda-Update.jpg&f=1&nofb=1",
-    subname: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Saepe odio temporibus dolorem at omnis magni nesciunt et unde. Dolore vitae quisquam minima inventore."
+    subname: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Saepe odio temporibus dolorem at omnis magni nesciunt et unde. Dolore vitae quisquam minima inventore.",
+    id: '8Lv4KlTEk8OpTOobC8zZc4SdHTp2'
   },
   {
     name: "gatita_official",
     time: "6:00 pm",
     read: true,
     img: "https://randomwordgenerator.com/img/picture-generator/52e1d5424b56aa14f1dc8460962e33791c3ad6e04e50744074267bd69149c7_640.jpg",
-    subname: "Maxime totam, fugiat vel consectetur ratione odit molestiae excepturi quasi?"
+    subname: "Maxime totam, fugiat vel consectetur ratione odit molestiae excepturi quasi?",
+    id: 'umFaYIRbXtf6xNRc87TUEC8qIyt2'
   },
   {
     name: "gapandita0",
@@ -176,7 +178,7 @@ export default function Main({ navigation }) {
   const showChat = (chat) => {
     return (
       <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name, img: chat.img }) }}>
-        <Animatable.View animation="bounceInLeft" delay={500} duration={1500} style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
+        <View style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
           <Image source={chat.img === "none" ? require('../assets/useravatar.png') : { uri: chat.img }} loadingIndicatorSource={require('../assets/useravatar.png')} style={{ width: 50, height: 50, resizeMode: "cover", borderRadius: 50 }} />
           {!chat.read ? <Icon name="ellipse" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> : null}
           <View style={{ marginLeft: 5, width: '100%', flex: 1 }}>
@@ -202,7 +204,7 @@ export default function Main({ navigation }) {
             </View>
 
           </View>
-        </Animatable.View>
+        </View>
       </TouchableOpacity>
     )
   }

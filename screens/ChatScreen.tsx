@@ -12,11 +12,16 @@ import { CameraKitCamera } from 'react-native-camera-kit'
 //@ts-ignore
 import EmojiBoard from 'react-native-emoji-board'
 import user from '../classes/User';
+import Store from '@react-native-firebase/firestore'
+import auth from '@react-native-firebase/auth'
+import Crypto from '../classes/Crypto'
+let id_ = user.id;
 
 //@ts-ignore
 export default function ChatScreen({ route, navigation }) {
   const { name, id, img } = route.params;
-  const { colors } = useTheme();
+  const theme = useTheme();
+  const { colors } = theme;
   const [mensajes, setMessages] = useState([]);
   const [cameraVisible, OpenCamera] = useState(false);
   const [emojiVisible, SetVisibleEmoji] = useState(false)
@@ -35,16 +40,16 @@ export default function ChatScreen({ route, navigation }) {
         return (
           <View style={{ flexDirection: "row", alignItems: 'center' }}>
             <Icon name="call-outline" size={32} color={colors.text} style={{ backgroundColor: colors.card, paddingHorizontal: 10 }} />
-            <Menu ref={(ref) => (_menu = ref)}
+            <Menu ref={(ref:any) => (_menu = ref)}
               button={<Icon onPress={() => _menu.show()} name="ellipsis-vertical" size={26} color={colors.text} style={{ backgroundColor: colors.card, paddingLeft: 5, paddingRight: 10, paddingVertical: 8 }} />}>
               <MenuItem>{<Icon name="trash-outline" size={18} color="#000" />} Vaciar chat</MenuItem>
               <MenuItem>{<Icon name="lock-closed-outline" size={18} color="#000" />} Bloquear</MenuItem>
             </Menu>
           </View>)
       },
-      headerTitle: (props) => {
+      headerTitle: (props:any) => {
         return (
-          <TouchableOpacity onPress={() => alert(name)}>
+          <TouchableOpacity onPress={() => console.info(name)}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image style={{ height: 44, width: 44, resizeMode: 'cover', borderRadius: 44 }} source={img == 'none' ? require('../assets/useravatar.png') : { uri: img }} />
               <Text ellipsizeMode='tail' textBreakStrategy='simple' style={{ fontSize: 20, color: colors.text, fontFamily: 'Raleway-Regular', marginLeft: 10 }}>{name}</Text>
@@ -57,51 +62,50 @@ export default function ChatScreen({ route, navigation }) {
   })
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: 1606169203000,
-        user: {
-          _id: 5,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-        video: "https://firebasestorage.googleapis.com/v0/b/transforma-app.appspot.com/o/MonitorFantasma%2045018.mp4?alt=media&token=0cb0b229-49db-4c56-8b93-3155c5f63a1e"
-      },
-      {
-        _id: 3,
-        text: 'how are you wey?',
-        createdAt: 1606169303000,
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-        image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.boostability.com%2Fwp-content%2Fuploads%2F2014%2F09%2FPanda-Update.jpg&f=1&nofb=1"
-      },
-      {
-        _id: 0,
-        text: 'KYC viejo lesbiano',
-        createdAt: new Date(),
-        user: {
-          _id: 0,
-          name: 'JessiMalak',
+    console.info(user, id)
+    console.info(auth().currentUser)
+    const unsuscribe = Store().collection('usuarios').doc(user.id)
+    .collection('chats').doc(id).collection('Mensajes')
+    .onSnapshot((snapshot)=>{
+      const snap = snapshot.docChanges().filter(({type})=>type == 'added').map(({doc})=>{
+        const data = doc.data()
+        return {...data, createdAt: data.createdAt.toDate()}
+      }).sort((a, b)=>b.createdAt.getTime() - a.createdAt.getTime())
+      console.log(snap.map(doc=>{return doc.createdAt}))
+      setMessages_(snap)
+    })
+    // return unsuscribe
+  }, [])
+  const setMessages_ =  useCallback((message = []) => {
+    // Store().collection('usuarios').doc(user.id).collection('chats').doc(id).collection('Mensajes').add(message[0]).then(()=>{
+      message.map((mensaje:object, index:number)=>{
+        try {
+        message[index].text = Crypto.Decrypt(Crypto.Decrypt(mensaje.text, id, "R", false), "GET Random", "A", true, 13)
+      } catch (error) {
+        console.error('try',error)
+      }
+      })
+    
+    setMessages(previousMessages => GiftedChat.append(previousMessages, message))
+    console.log(message)
+  }, [])
+  const onSend = (message = []) => {
+    let {createdAt} = message[0]
+    console.log(id_)
+    //@ts-ignore
+    message[0].text = Crypto.Encrypt(message[0].text, 'SELECT MAIN code', "A", true, 13)
+    //@ts-ignore
+    message[0].text = Crypto.Encrypt(message[0].text, id, "R", false)
+    const me = Store().collection('usuarios').doc(id_).collection('chats').doc(id)
+    const other =  Store().collection('usuarios').doc(id).collection('chats').doc(id_)
+    me.collection('Mensajes').add(message[0]).then(()=>{
+      me.update({last: createdAt})
+      other.collection('Mensajes').add(message[0]).then(()=>{
+        other.update({last: createdAt, leido: false})
+      })
+    })
 
-        },
-        audio: "https://firebasestorage.googleapis.com/v0/b/transforma-app.appspot.com/o/Amurrao.mp3?alt=media&token=a2ba9b1b-400e-43fa-8340-ccfe03c53289"
-      },
-    ])
-  }, [])
-  let idM = 0;
-  const onSend = useCallback((messages = []) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-    if (idM == 3) {
-      idM = 0
-    } else {
-      idM++
-    }
-  }, [])
+  }
 
 
   const placeColor = colors.text + "aa"
@@ -154,7 +158,7 @@ export default function ChatScreen({ route, navigation }) {
         }}
         textStyle={{
           right: {
-            color: colors.background,
+            color: theme.dark ? colors.background : colors.border,
             fontFamily: 'Roboto-Regular'
           },
           left: {
@@ -234,8 +238,8 @@ export default function ChatScreen({ route, navigation }) {
               renderUsernameOnMessage={true}
               alignTop={true}
               messages={mensajes}
-              user={{ _id: idM, name: user.username }}
-              onSend={messages => onSend(messages)}
+              user={{ _id: user.id, name: user.username }}
+              onSend={message => onSend(message)}
               renderSend={sendButton}
               renderBubble={StyledBubble}
               renderActions={emojis}
