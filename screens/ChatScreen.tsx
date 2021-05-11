@@ -1,7 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { StyleSheet, Text, View, StatusBar, TouchableOpacity, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'
-//@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 import { Bubble, GiftedChat, Time, Send, InputToolbar, Composer } from 'react-native-gifted-chat'
 //@ts-ignore
@@ -9,17 +8,16 @@ import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu';
 import { useTheme } from '@react-navigation/native'
 //@ts-ignore
 import { CameraKitCamera } from 'react-native-camera-kit'
-//@ts-ignore
-import EmojiBoard from 'react-native-emoji-board'
 import user from '../classes/User';
 import Store from '@react-native-firebase/firestore'
 import auth from '@react-native-firebase/auth'
 import Crypto from '../classes/Crypto'
+import 'dayjs/locale/es'
 let id_ = user.id;
 
 //@ts-ignore
 export default function ChatScreen({ route, navigation }) {
-  const { name, id, img } = route.params;
+  const { name, id, img, tipo, leido } = route.params;
   const theme = useTheme();
   const { colors } = theme;
   const [mensajes, setMessages] = useState([]);
@@ -40,14 +38,14 @@ export default function ChatScreen({ route, navigation }) {
         return (
           <View style={{ flexDirection: "row", alignItems: 'center' }}>
             <Icon name="call-outline" size={32} color={colors.text} style={{ backgroundColor: colors.card, paddingHorizontal: 10 }} />
-            <Menu ref={(ref:any) => (_menu = ref)}
+            <Menu ref={(ref: any) => (_menu = ref)}
               button={<Icon onPress={() => _menu.show()} name="ellipsis-vertical" size={26} color={colors.text} style={{ backgroundColor: colors.card, paddingLeft: 5, paddingRight: 10, paddingVertical: 8 }} />}>
               <MenuItem>{<Icon name="trash-outline" size={18} color="#000" />} Vaciar chat</MenuItem>
               <MenuItem>{<Icon name="lock-closed-outline" size={18} color="#000" />} Bloquear</MenuItem>
             </Menu>
           </View>)
       },
-      headerTitle: (props:any) => {
+      headerTitle: (props: any) => {
         return (
           <TouchableOpacity onPress={() => console.info(name)}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -64,47 +62,61 @@ export default function ChatScreen({ route, navigation }) {
   useEffect(() => {
     console.info(user, id)
     console.info(auth().currentUser)
-    const unsuscribe = Store().collection('usuarios').doc(user.id)
-    .collection('chats').doc(id).collection('Mensajes')
-    .onSnapshot((snapshot)=>{
-      const snap = snapshot.docChanges().filter(({type})=>type == 'added').map(({doc})=>{
+    const ref = tipo == 'sala' ?
+      Store().collection('salas').doc(id)
+      : Store().collection('usuarios').doc(user.id)
+        .collection('chats').doc(id)
+    const unsuscribe = ref.collection('Mensajes').onSnapshot((snapshot) => {
+      const snap = snapshot.docChanges().filter(({ type }) => type == 'added').map(({ doc }) => {
         const data = doc.data()
-        return {...data, createdAt: data.createdAt.toDate()}
-      }).sort((a, b)=>b.createdAt.getTime() - a.createdAt.getTime())
-      console.log(snap.map(doc=>{return doc.createdAt}))
+        const isOther = data.user._id == id
+        try {
+          const code = isOther ? user.id : id;
+          data.text = Crypto.Decrypt(Crypto.Decrypt(data.text, code, "R", false), "GET Random", "A", true, 13)
+        } catch (error) {
+          console.log('try', error)
+        }
+        if (isOther && mensajes.length > 0 && tipo == 'contacto') {
+          ref.update({ leido: true })
+        }
+        return { ...data, createdAt: data.createdAt.toDate() }
+      }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       setMessages_(snap)
     })
-    // return unsuscribe
+    if(tipo == 'contacto' && !leido){
+      ref.update({leido: true})
+    }
+    return () => unsuscribe()
   }, [])
-  const setMessages_ =  useCallback((message = []) => {
-    // Store().collection('usuarios').doc(user.id).collection('chats').doc(id).collection('Mensajes').add(message[0]).then(()=>{
-      message.map((mensaje:object, index:number)=>{
-        try {
-        message[index].text = Crypto.Decrypt(Crypto.Decrypt(mensaje.text, id, "R", false), "GET Random", "A", true, 13)
-      } catch (error) {
-        console.error('try',error)
-      }
-      })
-    
+  const setMessages_ = useCallback((message = []) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, message))
-    console.log(message)
-  }, [])
+    console.log('callback', message)
+  }, [mensajes])
+
   const onSend = (message = []) => {
-    let {createdAt} = message[0]
-    console.log(id_)
+    let { createdAt } = message[0]
     //@ts-ignore
     message[0].text = Crypto.Encrypt(message[0].text, 'SELECT MAIN code', "A", true, 13)
     //@ts-ignore
+    const text = message[0].text
+    //@ts-ignore
     message[0].text = Crypto.Encrypt(message[0].text, id, "R", false)
-    const me = Store().collection('usuarios').doc(id_).collection('chats').doc(id)
-    const other =  Store().collection('usuarios').doc(id).collection('chats').doc(id_)
-    me.collection('Mensajes').add(message[0]).then(()=>{
-      me.update({last: createdAt})
-      other.collection('Mensajes').add(message[0]).then(()=>{
-        other.update({last: createdAt, leido: false})
+    if (tipo == 'contacto') {
+      const me = Store().collection('usuarios').doc(id_).collection('chats').doc(id)
+      const other = Store().collection('usuarios').doc(id).collection('chats').doc(id_)
+      me.collection('Mensajes').add(message[0]).then(() => {
+        me.update({ last: { createdAt, text }, leido: true })
+        other.collection('Mensajes').add(message[0]).then(() => {
+          other.update({ last: { createdAt, text }, leido: false })
+        }).catch(e=>{
+          console.warn('error "other"', e)
+        })
+      }).catch(e=>{
+        console.warn('error "me"',e)
       })
-    })
-
+    }else{
+      Store().collection('salas').doc(id).collection('Mensajes').add(message[0])
+    }
   }
 
 
@@ -125,7 +137,6 @@ export default function ChatScreen({ route, navigation }) {
       // // </TouchableHighlight>
       //   }}
       />
-
     )
   }
   //@ts-ignore
@@ -137,7 +148,7 @@ export default function ChatScreen({ route, navigation }) {
             color: placeColor
           },
           right: {
-            color: colors.background
+            color: placeColor
           }
         }}
       />
@@ -149,7 +160,7 @@ export default function ChatScreen({ route, navigation }) {
       <Bubble {...props}
         wrapperStyle={{
           right: {
-            backgroundColor: colors.text,
+            backgroundColor: colors.background,
           },
           left: {
             backgroundColor: colors.notification,
@@ -158,7 +169,7 @@ export default function ChatScreen({ route, navigation }) {
         }}
         textStyle={{
           right: {
-            color: theme.dark ? colors.background : colors.border,
+            color: colors.text,
             fontFamily: 'Roboto-Regular'
           },
           left: {
@@ -229,27 +240,27 @@ export default function ChatScreen({ route, navigation }) {
           resetFocusTimeout={0} // optional
           resetFocusWhenMotionDetected={true} // optional
         />) : (
-            <GiftedChat
-              //@ts-ignore
-              style={{ height: '100%', width: '100%' }}
-              placeholder="Escribe un mensaje..."
-              showUserAvatar={false}
-              inverted={true}
-              renderUsernameOnMessage={true}
-              alignTop={true}
-              messages={mensajes}
-              user={{ _id: user.id, name: user.username }}
-              onSend={message => onSend(message)}
-              renderSend={sendButton}
-              renderBubble={StyledBubble}
-              renderActions={emojis}
-              onPressActionButton={() => SetVisibleEmoji(true)}
-              // renderAccessory={camera}
-              renderInputToolbar={input}
-            />
-          )
+          <GiftedChat
+            //@ts-ignore
+            style={{ height: '100%', width: '100%' }}
+            placeholder="Escribe un mensaje..."
+            showUserAvatar={false}
+            inverted={true}
+            renderUsernameOnMessage={true}
+            alignTop={true}
+            messages={mensajes}
+            user={{ _id: user.id, name: user.username }}
+            onSend={message => onSend(message)}
+            renderSend={sendButton}
+            renderBubble={StyledBubble}
+            renderActions={emojis}
+            onPressActionButton={() => SetVisibleEmoji(true)}
+            // renderAccessory={camera}
+            renderInputToolbar={input}
+            locale='es'
+          />
+        )
         }
-        <EmojiBoard showBoard={emojiVisible} onClick={(emoji:string) => { console.log(emoji) }} />
       </LinearGradient>
 
 
