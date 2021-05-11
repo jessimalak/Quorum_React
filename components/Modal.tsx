@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Text, View, StyleSheet, TouchableHighlight, Dimensions} from 'react-native'
+import {Modal, Text, View, StyleSheet, TouchableHighlight, Dimensions, StyleProp, ViewStyle} from 'react-native'
 import sharedStyles from '../classes/Styles'
 import PropTypes from 'prop-types'
 import {useTheme} from '@react-navigation/native'
@@ -78,62 +78,70 @@ export default ModalView;
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
 
+interface ButtonProps{
+    size?: number
+    icon: string | null
+    type: 'primary' | 'secundary'
+    onPress: Function
+    style?: StyleProp<ViewStyle>
+    text?: string
+}
+
+// //@ts-ignore
+// const cancelButton = (props)=>{
+//     let size:Number;
+//     let icon:String;
+//     if(props.size == null){
+//         size = props.icon ? 20 : 16
+//     }else{
+//         size = props.size
+//     }
+//     if(props.name == null){
+//         icon = "close"
+//     }else{
+//         icon = props.name
+//     }
+//     const {colors} = useTheme();
+//     return(
+//     <TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style, {backgroundColor: colors.notification}]} underlayColor={colors.primary}>
+//             {props.icon ? <Icon name={icon} size={size} style={{textAlign:'center'}} color={colors.text}/>  : <Text style={{textAlign:'center', color: props.size}}>{props.texto}</Text>}
+//     </TouchableHighlight>)
+// }
+
+// //@ts-ignore
+// const acceptButton = (props)=>{
+//     const {colors} = useTheme();
+//     let size:Number;
+//     let icon:String;
+//     if(props.size == null){
+//         size = props.icon ? 20 : 16
+//     }else{
+//         size = props.size
+//     }
+//     if(props.name == null){
+//         icon = "checkmark"
+//     }else{
+//         icon = props.name
+//     }
+//     return(<TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style]} underlayColor="#b37feb">
+//             {props.icon ? <Icon name={icon} size={size} color={colors.primary} style={{textAlign:'center'}}/> : <Text style={{textAlign:'center', color: colors.card, fontSize: props.size}}>{props.texto}</Text>}
+//         </TouchableHighlight>)
+// }
+
 //@ts-ignore
-const cancelButton = (props)=>{
-    let size:Number;
-    let icon:String;
-    if(props.size == null){
-        size = props.icon ? 20 : 16
-    }else{
-        size = props.size
-    }
-    if(props.name == null){
-        icon = "close"
-    }else{
-        icon = props.name
-    }
+ export function Button({type, onPress, icon, text, style, size}:ButtonProps){
     const {colors} = useTheme();
+    const size_ = size || 20
+    const isPrimary = type == 'primary' 
     return(
-    <TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style, {backgroundColor: colors.notification}]} underlayColor={colors.primary}>
-            {props.icon ? <Icon name={icon} size={size} style={{textAlign:'center'}} color={colors.text}/>  : <Text style={{textAlign:'center', color: props.size}}>{props.texto}</Text>}
-    </TouchableHighlight>)
-}
-
-//@ts-ignore
-const acceptButton = (props)=>{
-    const {colors} = useTheme();
-    let size:Number;
-    let icon:String;
-    if(props.size == null){
-        size = props.icon ? 20 : 16
-    }else{
-        size = props.size
-    }
-    if(props.name == null){
-        icon = "checkmark"
-    }else{
-        icon = props.name
-    }
-    return(<TouchableHighlight onPress={props.onPress} style={[sharedStyles.modalButton, props.style]} underlayColor="#b37feb">
-            {props.icon ? <Icon name={icon} size={size} color={colors.primary} style={{textAlign:'center'}}/> : <Text style={{textAlign:'center', color: colors.card, fontSize: props.size}}>{props.texto}</Text>}
-        </TouchableHighlight>)
-}
-
-//@ts-ignore
- export const Button = (props)=>{
-    if(props.isCancel){
-        return cancelButton(props)
-    }else{
-       return acceptButton(props)
-    }
-}
-
-Button.propTypes = {
-    texto: PropTypes.string,
-    isCancel: PropTypes.bool.isRequired,
-    icon: PropTypes.bool.isRequired,
-    name: PropTypes.string,
-    size: PropTypes.number,
-    onPress: PropTypes.func,
-    style: PropTypes.object
+        <TouchableHighlight
+        onPress={()=>onPress()}
+        style={[sharedStyles.modalButton,isPrimary && {backgroundColor: colors.notification}, style]} underlayColor="#b37feb"
+        >
+            {
+            icon ? <Icon name={icon} size={size_} color={isPrimary ? colors.text : colors.primary} style={{textAlign:'center'}}/>
+            : <Text style={{textAlign:'center', color: colors.card, fontSize: size_}}>{text}</Text>
+            }
+        </TouchableHighlight>
+    )
 }
