@@ -1,18 +1,20 @@
 import 'react-native-gesture-handler';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, Image, StatusBar, TouchableOpacity, TextInput, Switch, ActivityIndicator, Alert } from 'react-native';
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from '@react-native-async-storage/async-storage'
 //@ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons'
-import ModalView, { Button } from '../components/Modal'
+import { Button } from '../components/Modal'
 import { useTheme } from '@react-navigation/native'
 import user from '../classes/User'
 import sharedStyles from '../classes/Styles';
-import * as Animatable from 'react-native-animatable'
+import { Modalize } from 'react-native-modalize'
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import Guy from '../components/GuyFawkes'
 import firestore from '@react-native-firebase/firestore';
+import Crypto from '../classes/Crypto';
+import Bubble from '../components/ChatBubble'
 
 let tempo = [
   {
@@ -145,10 +147,15 @@ let tempo = [
 //@ts-ignore
 export default function Main({ navigation }) {
   const { colors } = useTheme();
-  const card = colors.background + "dd"
+  const card = colors.background + "ee"
 
   const [isEnabled, SetEnabled] = useState(false);
   const [loading, isLoading] = useState(false);
+  const [modalState, setModalState] = useState('none');
+  const modalRef = useRef<Modalize>(null)
+  const [roomName, SetRoomName] = useState("");
+  const [etiquetas, SetEtiquetas] = useState("");
+  const [chats, setChats] = useState([])
 
   async function getData() {
     try {
@@ -156,10 +163,10 @@ export default function Main({ navigation }) {
       user.estado = await AsyncStorage.getItem('estado');
       //@ts-ignore
       user.name = await AsyncStorage.getItem('name');
-      //@ts-ignore
-      user.username = await AsyncStorage.getItem('username');
-      //@ts-ignore
-      user.mail = await AsyncStorage.getItem('mail');
+      // //@ts-ignore
+      // user.username = await AsyncStorage.getItem('username');
+      // //@ts-ignore
+      // user.mail = await AsyncStorage.getItem('mail');
     }
     catch (e) {
 
@@ -168,46 +175,75 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     getData()
-  })
+    const unsuscribe = firestore().collection('usuarios').doc(user.id)
+      .collection('chats')
+      .onSnapshot((snapshot) => {
+        const snap = snapshot.docs.map((doc) => {
+          const data = doc.data()
+          // const isOther = data.user._id == id
+          try {
+            // const code = isOther ? user.id : id;
+            if (data.tipo != 'sala')
+              data.last.text = Crypto.Decrypt(data.last?.text, "GET Random", "A", true, 13)
+          } catch (error) {
+            console.error('try', error)
+          }
+          return {
+            ...data,
+            id: doc.id,
+            last: {
+              createdAt: data.tipo == 'sala' ? data.fecha.toDate() : data.last?.createdAt.toDate(),
+              text: data.tipo != 'sala' ? data.last.text : 'Sala de chat_'
+            },
+            img: 'none'
+          }
+        }).sort((a, b) => b.last.createdAt.getTime() - a.last.createdAt.getTime())
+        //@ts-ignore
+        setChats(snap)
+      })
+    return () => unsuscribe()
+  }, [])
 
-  const [PrivateModalState, ShowPrivateModal] = useState(false);
-  const [CreateModalState, ShowCreateModal] = useState(false);
-  const [roomName, SetRoomName] = useState("");
-  const [etiquetas, SetEtiquetas] = useState("");
+  // const setMessages_ = useCallback((message = []) => {
+  //   setChats(previousChats => [...previousChats, message])
+  //   console.log('callback',message)
+  // }, [chats])
+
+
   //@ts-ignore
-  const showChat = (chat) => {
-    return (
-      <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name, img: chat.img }) }}>
-        <View style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
-          <Image source={chat.img === "none" ? require('../assets/useravatar.png') : { uri: chat.img }} loadingIndicatorSource={require('../assets/useravatar.png')} style={{ width: 50, height: 50, resizeMode: "cover", borderRadius: 50 }} />
-          {!chat.read ? <Icon name="ellipse" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> : null}
-          <View style={{ marginLeft: 5, width: '100%', flex: 1 }}>
-            <Text style={{ fontSize: 16, fontFamily: 'Roboto-Regular', paddingBottom: 5, color: colors.border }}>{chat.name}</Text>
-            <View style={{ flex: 1, flexDirection: 'row', overflow: 'hidden', alignItems: 'center' }}>
-              <Text
-                style={
-                  {
-                    paddingRight: 15, flexWrap: "wrap",
-                    maxWidth: '90%',
-                    flex: 1,
-                    fontFamily: 'Roboto-Light',
-                    color: colors.border
-                  }}
-                numberOfLines={1}
-                ellipsizeMode="clip">
-                {chat.subname/* {this.dec(chat.subname, "codes[8]", "R")} */}
-              </Text>
-              <Text style={
-                {
-                  fontSize: 10, color: colors.border
-                }}>{chat.time}</Text>
-            </View>
+  // const showChat = (chat) => {
+  //   return (
+  //     <TouchableOpacity onPress={() => { navigation.navigate("Chat", { id: chat.id, name: chat.name || chat.nombre, img: chat.img }) }}>
+  //       <View style={[sharedStyles.card, { marginVertical: 5, paddingVertical: 10, paddingLeft: 5, flexDirection: "row", alignItems: "center", position: "relative", backgroundColor: card }]}>
+  //         <Image source={chat.img === "none" ? require('../assets/useravatar.png') : { uri: chat.img }} loadingIndicatorSource={require('../assets/useravatar.png')} style={{ width: 50, height: 50, resizeMode: "cover", borderRadius: 50 }} />
+  //         {!chat.leido && <Icon name="ellipse" size={20} color={colors.primary} style={{ position: 'absolute', top: -5, right: -5 }} /> }
+  //         <View style={{ marginLeft: 5, width: '100%', flex: 1 }}>
+  //           <Text style={{ fontSize: 16, fontFamily: 'Roboto-Regular', paddingBottom: 5, color: colors.border }}>{chat.name || chat.nombre}</Text>
+  //           <View style={{ flex: 1, flexDirection: 'row', overflow: 'hidden', alignItems: 'center' }}>
+  //             <Text
+  //               style={
+  //                 {
+  //                   paddingRight: 15, flexWrap: "wrap",
+  //                   // maxWidth: '90%',
+  //                   flex: 1,
+  //                   fontFamily: 'Roboto-Light',
+  //                   color: colors.border
+  //                 }}
+  //               numberOfLines={1}
+  //               ellipsizeMode="clip">
+  //               {chat.last.text || 'sala de chat'}
+  //             </Text>
+  //             <Text style={
+  //               {
+  //                 fontSize: 10, color: colors.border
+  //               }}>{FormatDate(chat.last.createdAt) || '00:00'}</Text>
+  //           </View>
 
-          </View>
-        </View>
-      </TouchableOpacity>
-    )
-  }
+  //         </View>
+  //       </View>
+  //     </TouchableOpacity>
+  //   )
+  // }
 
   function CreateRoom() {
     if (roomName != "") {
@@ -215,29 +251,23 @@ export default function Main({ navigation }) {
       firestore().collection('salas').add({
         nombre: roomName,
         etiquetas: etiquetas,
-        priviate: isEnabled
-      }).then(() => {
+        private: isEnabled,
+        progenitore: user.id
+      }).then((data) => {
         SetRoomName("")
         SetEtiquetas("")
-        isLoading(false);
-        ShowCreateModal(false)
+        data.collection('Miembros').doc(user.id).set({ username: user.username, role: 'admin' }).then(() => {
+          isLoading(false);
+          modalRef.current?.close()
+          firestore().collection('usuarios').doc(user.id).collection('chats').doc(data.id).set({
+            tipo: 'sala',
+            nombre: roomName,
+            fecha: new Date()
+          })
+        })
       }).catch(() => {
         isLoading(false)
       })
-    }
-  }
-
-  const Tags = () => {
-    //@ts-ignore
-    let component = [];
-    if (etiquetas && etiquetas.includes(', ')) {
-      etiquetas.split(', ').forEach(tag => {
-        component.push(<View style={{ backgroundColor: colors.card, marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 3, borderRadius: 5 }}><Text style={{ color: colors.text, fontSize: 16 }}>{tag}</Text></View>)
-      })
-      //@ts-ignore
-      return (component)
-    } else {
-      return null
     }
   }
 
@@ -246,76 +276,107 @@ export default function Main({ navigation }) {
       <LinearGradient colors={[colors.card, colors.notification]} style={sharedStyles.linearGradient}>
         <StatusBar barStyle={colors.text == '#000000' ? 'dark-content' : 'light-content'} backgroundColor={colors.card} />
         <View style={{ height: 56, width: '100%', backgroundColor: colors.card, alignItems: 'center', flexDirection: 'row', paddingRight: 5, paddingLeft: 15 }}>
-          {/* <Text style={{ fontFamily: 'Raleway-Regular', fontSize: 23, flex: 1, color: '#fff' }}>QUORUM</Text> */}
           <Image source={colors.text == '#000000' ? require('../assets/nameb05.png') : require('../assets/namew05.png')} style={{ height: 45, resizeMode: 'contain', flex: 1 }} />
           <View style={{ flexDirection: "row", alignItems: 'center', flex: 2, justifyContent: 'flex-end' }}>
-            <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { ShowCreateModal(true) }} name="people-outline" size={32} color={colors.text} />
-            <TouchableHighlight onPress={() => { ShowPrivateModal(true) }} underlayColor={colors.notification} style={{ height: 32, width: 32, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: colors.card, marginRight: 10 }}>
+            <Icon.Button style={{ paddingHorizontal: 10, backgroundColor: colors.card }} onPress={() => { setModalState('create'); modalRef.current?.open() }} name="people-outline" size={32} color={colors.text} />
+            <TouchableHighlight onPress={() => { setModalState('private'); modalRef.current?.open() }} underlayColor={colors.notification} style={{ height: 32, width: 32, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: colors.card, marginRight: 10 }}>
               <Guy color={colors.text} size={32} />
             </TouchableHighlight>
           </View>
         </View>
         <FlatList
           style={{ paddingBottom: 10 }}
-          data={tempo}
+          data={chats}
           //@ts-ignore
-          keyExtractor={item => item.name}
+          keyExtractor={item => item.id}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => showChat(item)} />
+          renderItem={({ item }) => <Bubble
+            //@ts-ignore
+            text={item.last.text}
+            //@ts-ignore
+            name={item.name || item.nombre}
+            //@ts-ignore
+            img={item.img}
+            //@ts-ignore
+            date={item.last.createdAt}
+            //@ts-ignore
+            leido={item.leido}
+            //@ts-ignore
+            onPress={() => navigation.navigate("Chat", { id: item.id, name: item.name || item.nombre, img: item.img, tipo: item.tipo, leido: item.leido})}
+          />
+          } />
+        <Modalize ref={modalRef}
+          modalStyle={{ backgroundColor: colors.background, zIndex: 33 }}
+          adjustToContentHeight
+          HeaderComponent={
+            <Text style={{ fontFamily: 'Raleway-Regular', textAlign: 'center', padding: 5, fontSize: 20, color: colors.border }}>{modalState == 'private' ? 'Ingresar a sala privada' : 'Crear sala   '}</Text>
+          }
+          onClose={() => setModalState('none')}
+        >
+          {modalState == 'private' ?
+            <View style={styles.modalView}>
+              <Guy color={colors.border} size={128} />
+              <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border }]} placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'} placeholder="Código de acceso" />
+              <View style={styles.buttonContainer}>
+                <Button
+                  type='primary'
+                  icon='checkmark'
+                  onPress={() => modalRef.current?.close()} />
+                <Button
+                  type='secundary'
+                  icon='close'
+                  onPress={() => modalRef.current?.close()} />
+              </View>
+            </View> :
+            <View style={styles.modalView}>
+              <Icon name='people-outline' color={colors.border} size={92} />
+              <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
+                placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
+                placeholder="Nombre"
+                onChangeText={(value) => { SetRoomName(value) }}
+              />
+              <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
+                placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
+                placeholder="Etiquetas separadas por comas (,)"
+                onChangeText={(value) => { SetEtiquetas(value) }}
+              />
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {etiquetas.includes(', ') ? etiquetas.split(', ').map((tag, index) => {
+                  <View key={tag + index.toString()}
+                    style={{ backgroundColor: colors.card, marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 3, borderRadius: 5 }}>
+                    <Text style={{ color: colors.text, fontSize: 16 }}>{tag}</Text>
+                  </View>
+                }) : null}
+              </View>
+              <View style={[styles.buttonContainer, { marginHorizontal: 20, width: '90%', marginVertical: 10 }]}>
+                <Switch value={isEnabled} thumbColor={isEnabled ? colors.card : colors.primary} trackColor={{true: colors.notification + 'dd', false: colors.card + 'dd'}} onValueChange={(value) => SetEnabled(value)} />
+                <Text style={{ color: colors.border }}>{isEnabled ? 'Sala privada' : 'Sala Pública'}</Text>
+              </View>
+              {loading ? (<ActivityIndicator size='large' color={colors.primary} />) :
+                (<View style={styles.buttonContainer}>
+                  <Button
+                    type='primary'
+                    icon='checkmark'
+                    onPress={() => CreateRoom()} />
+                  <Button
+                    type='secundary'
+                    icon='close'
+                    onPress={() => modalRef.current?.close()} />
+                </View>)}
+            </View>
 
-        <ModalView visible={PrivateModalState} title="Ingresar a sala privada">
-          <Guy color={colors.border} size={128} />
-          <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border }]} placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'} placeholder="Código de acceso" />
-          <View style={styles.buttonContainer}>
-            <Button
-              isCancel={false}
-              icon={true}
-              //@ts-ignore
-              onPress={() => ShowPrivateModal(false)} />
-            <Button
-              isCancel={true}
-              icon={true}
-              //@ts-ignore
-              onPress={() => ShowPrivateModal(false)} />
-          </View>
+          }
+        </Modalize>
+        {/* <ModalView visible={PrivateModalState} title="Ingresar a sala privada">
+          
         </ModalView>
         <ModalView title="Crear sala" visible={CreateModalState}>
-          {/* <Icon name='people-outline' color={colors.border} size={92}/> */}
-          <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
-            placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
-            placeholder="Nombre"
-            onChangeText={(value) => { SetRoomName(value) }}
-          />
-
-          <TextInput style={[sharedStyles.modalInput, { width: '90%', borderBottomColor: colors.border, color: colors.border }]}
-            placeholderTextColor={colors.background == "#ffffff" ? '#333' : '#aaa'}
-            placeholder="Etiquetas separadas por comas (,)"
-            onChangeText={(value) => { SetEtiquetas(value) }}
-          />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Tags />
-          </View>
-          <View style={[styles.buttonContainer, { marginHorizontal: 20, width: '90%', marginVertical: 10 }]}>
-            <Switch value={isEnabled} thumbColor={isEnabled ? colors.card : colors.primary} onValueChange={(value) => SetEnabled(value)} />
-            <Text style={{ color: colors.border }}>{isEnabled ? 'Sala privada' : 'Sala Pública'}</Text>
-          </View>
-
-          {loading ? (<ActivityIndicator size='large' color={colors.primary} />) : (<View style={styles.buttonContainer}>
-            <Button
-              isCancel={false}
-              icon={true}
-              //@ts-ignore
-              onPress={() => CreateRoom()} />
-            <Button
-              isCancel={true}
-              icon={true}
-              //@ts-ignore
-              onPress={() => ShowCreateModal(false)} />
-          </View>)}
-        </ModalView>
-        <TouchableOpacity onPress={() => { Alert.alert('Añadir chat', 'aqui van los contactos') }} style={[styles.fab, { backgroundColor: colors.card }]}>
+          
+        </ModalView> */}
+        {modalState == 'none' && <TouchableOpacity onPress={() => { Alert.alert('Añadir chat', 'aqui van los contactos') }}
+          style={[styles.fab, { backgroundColor: colors.card }]}>
           <Icon name="pencil" size={32} color={colors.text} />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </LinearGradient>
     </View>
   );
@@ -332,7 +393,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: 20
   },
   fab: {
     position: 'absolute',
@@ -344,5 +406,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3
+  },
+  modalView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20
   }
-});
+})
