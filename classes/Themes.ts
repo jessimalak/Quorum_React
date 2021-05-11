@@ -94,6 +94,30 @@ export const light = {
     }
 }
 
+export const nature_dark = {
+    dark: true,
+    colors:{
+        primary: "#00b09b",
+        background: "#222222",
+        card: "#1c7f73",
+        text: "#ffffff",
+        border: "#ffffff",
+        notification: "#2f7a1a"
+    }
+}
+
+export const nature_light = {
+    dark: false,
+    colors:{
+        primary: "#1c7f73",
+        background: "#ffffff",
+        card: "#00b09b",
+        text: "#000000",
+        border: "#000000",
+        notification: "#96c93d"
+    }
+}
+
 const Themes = [menta_light, menta_dark];
 
 export default Themes
