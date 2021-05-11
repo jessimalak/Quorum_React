@@ -17,12 +17,10 @@ import items from './Data'
         } else if (method == "R") {
             encrypted = CryptoES.Rabbit.encrypt(value, key).toString()
         }
-        encrypted = encrypted.split('=').reverse().join('=').split('+').reverse().join('+')
             return Crypto.Reverse(encrypted)
     },
     Decrypt: (value: string, key_: string, method: "A" | "T" | "R" | "B ", reverseKey: boolean, id?:number): string=> {
         let value_ = Crypto.Reverse(value)
-        value_ = value_.split('+').reverse().join('+').split('=').reverse().join('=')
         let decrypted: string = value_;
         let key = id ? items[id] : reverseKey ? Crypto.Reverse(key_) : key_;
         if (method == "A") {
