@@ -185,6 +185,12 @@ export default function Main({ navigation }) {
             // const code = isOther ? user.id : id;
             if (data.tipo != 'sala')
               data.last.text = Crypto.Decrypt(data.last?.text, "GET Random", "A", true, 13)
+            else{
+               firestore().collection('salas').doc(id).get().then(sala=>{
+                let sala_ = sala.data()
+                ///....
+                                              })
+                                              }
           } catch (error) {
             console.error('try', error)
           }
